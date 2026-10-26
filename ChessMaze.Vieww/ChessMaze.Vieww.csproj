@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+	<UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Images\Bishop.jpg" />
+    <None Remove="Images\King.jpg" />
+    <None Remove="Images\Knight.jpg" />
+    <None Remove="Images\Rook.jpg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\src\ChessMaze.Model\ChessMaze.Model.csproj" />
+    <ProjectReference Include="..\src\ChessMaze.Persistence\ChessMaze.Persistence.csproj" />
+    <ProjectReference Include="..\tests\ChessMaze.Tests\ChessMaze.Tests.csproj" />
+    <ProjectReference Include="..\tools\ChessMaze.DatabaseTool\ChessMaze.DatabaseTool.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Images\Bishop.jpg" />
+    <Resource Include="Images\King.jpg" />
+    <Resource Include="Images\Knight.jpg" />
+    <Resource Include="Images\Rook.jpg" />
+  </ItemGroup>
+
+</Project>
