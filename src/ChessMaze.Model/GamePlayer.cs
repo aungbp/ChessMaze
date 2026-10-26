@@ -162,18 +162,33 @@ public void Restore(GameSnapshot snapshot)
         // 3. InvalidMovement
         if (!_validator.IsValidMovement(
                 _currentPosition, destination, movementPiece.Value))
+        {
             return MoveResult.InvalidMovement;
+        }
 
         // 4. PathBlocked
-        if ((movementPiece is PieceType.Rook or PieceType.Bishop) &&
-            _validator.IsPathBlocked(
-                _currentPosition, destination, movementPiece.Value, _board))
+        bool pathBlocked = false;
+
+        if (movementPiece is PieceType.Rook or PieceType.Bishop)
+        {
+            pathBlocked = _validator.IsPathBlocked(
+                _currentPosition,
+                destination,
+                movementPiece.Value,
+                _board);
+        }
+
+        if (pathBlocked)
+        {
             return MoveResult.PathBlocked;
+        }
 
         // 5. InvalidDestination
         if (_validator.InvalidDestination(
                 destination, _targetPosition, _board))
+        {
             return MoveResult.InvalidDestination;
+        }
 
         // 6. The movement is valid
         return MoveResult.Success;

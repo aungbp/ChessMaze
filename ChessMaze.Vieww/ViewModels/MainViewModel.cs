@@ -1,9 +1,10 @@
-﻿using System.Collections.ObjectModel;
+﻿using ChessMaze.Model;
+using ChessMaze.Persistence;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 
-using ChessMaze.Model;
 using BCIT615.Assessment1.GamePlayer.Model;
 
 namespace ChessMaze.Vieww.ViewModels
@@ -78,7 +79,6 @@ namespace ChessMaze.Vieww.ViewModels
 
             // Ask the Model to validate and perform the move.
             MoveResult result = _gamePlayer.TryMove(destination);
-
             // Update the current-position highlight.
             RefreshBoard();
 
@@ -87,41 +87,48 @@ namespace ChessMaze.Vieww.ViewModels
             {
                 case MoveResult.Success:
                     MoveHistory.Add(
-                        $"Move accepted: ({destination.Row}, {destination.Column})");
+                        $"Move {result}: ({destination.Row}, {destination.Column})");
                     break;
 
                 case MoveResult.GameCompleted:
                     MoveHistory.Add(
-                        $"Game completed at ({destination.Row}, {destination.Column})!");
+                        $"Game completed at ({destination.Row}, {destination.Column})");
                     break;
 
                 case MoveResult.GameAlreadyCompleted:
                     MoveHistory.Add(
-                        "Move rejected: the game is already completed.");
+                        $"Move Rejected: Game is {result} " +
+                        $"({destination.Row}, {destination.Column})");
                     break;
 
                 case MoveResult.OutOfBounds:
                     MoveHistory.Add(
-                        "Move rejected: destination is out of bounds.");
+                        $"Move Rejected: {result} " +
+                        $"({destination.Row}, {destination.Column})");
                     break;
 
                 case MoveResult.InvalidMovement:
                     MoveHistory.Add(
-                        "Move rejected: invalid movement.");
+                        $"Move Rejected: {result} " +
+                        $"({destination.Row}, {destination.Column})");
                     break;
 
                 case MoveResult.PathBlocked:
                     MoveHistory.Add(
-                        "Move rejected: path is blocked.");
+                        $"Move Rejected: {result} " +
+                        $"({destination.Row}, {destination.Column})");
                     break;
 
                 case MoveResult.InvalidDestination:
                     MoveHistory.Add(
-                        "Move rejected: invalid destination.");
+                        $"Move Rejected: {result} " +
+                        $"({destination.Row}, {destination.Column})");
                     break;
 
                 default:
-                    MoveHistory.Add($"Move result: {result}");
+                    MoveHistory.Add(
+                        $"Move Rejected: {result} " +
+                        $"({destination.Row}, {destination.Column})");
                     break;
             }
         }
