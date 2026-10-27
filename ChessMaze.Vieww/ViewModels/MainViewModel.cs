@@ -1,11 +1,11 @@
-﻿using ChessMaze.Model;
+﻿using BCIT615.Assessment1.GamePlayer.Model;
+using ChessMaze.Model;
 using ChessMaze.Persistence;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Input;
-
-using BCIT615.Assessment1.GamePlayer.Model;
 
 namespace ChessMaze.Vieww.ViewModels
 {
@@ -13,29 +13,92 @@ namespace ChessMaze.Vieww.ViewModels
     {
         private readonly GamePlayer _gamePlayer;
 
+        private string _currentGameName = string.Empty;
+
+        private bool _isGameStarted;
+
+        private readonly GamePersistenceService _persistenceService;
+
         public ObservableCollection<SquareViewModel> Squares { get; }
             = new ObservableCollection<SquareViewModel>();
 
         public ObservableCollection<string> MoveHistory { get; }
             = new ObservableCollection<string>();
 
+        public ICommand StartGameCommand { get; private set; } = null!;
+
         public ICommand SelectSquareCommand { get; }
 
         public ICommand RestartCommand { get; }
 
+        public string CurrentGameName
+        {
+            get => _currentGameName;
+            set
+            {
+                if (_currentGameName == value)
+                    return;
+
+                _currentGameName = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsGameStarted
+        {
+            get => _isGameStarted;
+            set
+            {
+                if (_isGameStarted == value)
+                    return;
+
+                _isGameStarted = value;
+
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(StartScreenVisibility));
+                OnPropertyChanged(nameof(GameScreenVisibility));
+            }
+        }
+
+        public Visibility StartScreenVisibility =>
+            IsGameStarted ? Visibility.Collapsed : Visibility.Visible;
+
+        public Visibility GameScreenVisibility =>
+            IsGameStarted ? Visibility.Visible : Visibility.Collapsed;
+
         public MainViewModel()
         {
+            StartGameCommand = new RelayCommand(_ => StartGame());
             // Create the game using your existing Model.
             _gamePlayer = new GamePlayer();
 
             // Connect the UI commands.
-            SelectSquareCommand = new RelayCommand(SelectSquare);
+            SelectSquareCommand = new RelayCommand(
+            parameter => _ = SelectSquareAsync(parameter));
 
             RestartCommand = new RelayCommand(
                 _ => RestartGame());
 
             // Create all 36 squares.
             CreateBoardSquares();
+        }
+
+        private void StartGame()
+        {
+            if (string.IsNullOrWhiteSpace(CurrentGameName))
+            {
+                MessageBox.Show(
+                    "Please enter your name before starting the game.",
+                    "Name Required",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+
+                return;
+            }
+
+            CurrentGameName = CurrentGameName.Trim();
+
+            IsGameStarted = true;
         }
 
         private void CreateBoardSquares()
@@ -72,64 +135,60 @@ namespace ChessMaze.Vieww.ViewModels
             }
         }
 
-        private void SelectSquare(object? parameter)
+        private async Task SelectSquareAsync(object? parameter)
         {
             if (parameter is not Position destination)
                 return;
 
-            // Ask the Model to validate and perform the move.
             MoveResult result = _gamePlayer.TryMove(destination);
-            // Update the current-position highlight.
+
             RefreshBoard();
 
-            // Display the result in Move History.
             switch (result)
             {
                 case MoveResult.Success:
                     MoveHistory.Add(
                         $"Move {result}: ({destination.Row}, {destination.Column})");
+
+                    await SaveCurrentGameAsync();
                     break;
 
                 case MoveResult.GameCompleted:
                     MoveHistory.Add(
                         $"Game completed at ({destination.Row}, {destination.Column})");
+
+                    await SaveCurrentGameAsync();
                     break;
 
                 case MoveResult.GameAlreadyCompleted:
-                    MoveHistory.Add(
-                        $"Move Rejected: Game is {result} " +
-                        $"({destination.Row}, {destination.Column})");
-                    break;
-
                 case MoveResult.OutOfBounds:
-                    MoveHistory.Add(
-                        $"Move Rejected: {result} " +
-                        $"({destination.Row}, {destination.Column})");
-                    break;
-
                 case MoveResult.InvalidMovement:
-                    MoveHistory.Add(
-                        $"Move Rejected: {result} " +
-                        $"({destination.Row}, {destination.Column})");
-                    break;
-
                 case MoveResult.PathBlocked:
-                    MoveHistory.Add(
-                        $"Move Rejected: {result} " +
-                        $"({destination.Row}, {destination.Column})");
-                    break;
-
                 case MoveResult.InvalidDestination:
-                    MoveHistory.Add(
-                        $"Move Rejected: {result} " +
-                        $"({destination.Row}, {destination.Column})");
-                    break;
-
                 default:
                     MoveHistory.Add(
-                        $"Move Rejected: {result} " +
-                        $"({destination.Row}, {destination.Column})");
+                        $"Move Rejected: {result} ({destination.Row}, {destination.Column})");
                     break;
+            }
+        }
+
+        private async Task SaveCurrentGameAsync()
+        {
+            try
+            {
+                GameSnapshot snapshot = _gamePlayer.Capture();
+
+                await _persistenceService.SaveGameAsync(
+                    CurrentGameName,
+                    snapshot);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Unable to save the game: {ex.Message}",
+                    "Save Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
         }
 

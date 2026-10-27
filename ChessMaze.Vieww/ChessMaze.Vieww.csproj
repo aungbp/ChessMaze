@@ -17,6 +17,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\src\ChessMaze.Model\ChessMaze.Model.csproj" />
     <ProjectReference Include="..\src\ChessMaze.Persistence\ChessMaze.Persistence.csproj" />
     <ProjectReference Include="..\tests\ChessMaze.Tests\ChessMaze.Tests.csproj" />

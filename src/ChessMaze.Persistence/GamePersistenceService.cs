@@ -5,6 +5,13 @@ namespace ChessMaze.Persistence;
 
 public sealed class GamePersistenceService(ISavedGameRepository repository)
 {
+    public async Task SaveGameAsync(
+    string name,
+    GameSnapshot snapshot)
+    {
+        await repository.SaveAsync(name, snapshot);
+    }
+
     public async Task<LoadGameResult> TryLoadAsync(string n, GamePlayer current)
     {
         GameSnapshot? s;
